@@ -21,6 +21,9 @@ Vagrant.configure(2) do |config|
     # don't mind about insecure ssh key
     config.ssh.insert_key = false
 
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder ".", "/project", nfs_udp: false
+
     # common install on all nodes
     config.vm.provision 'common', type: 'shell',
     path: 'provision/common.bash',
@@ -43,10 +46,15 @@ Vagrant.configure(2) do |config|
         config.vm.define "pg-patroni#{i}" do |patroni|
             patroni.vm.hostname = "pg-patroni#{i}"
 
+            # ssh configuration
+            patroni.vm.synced_folder 'ssh', '/root/.ssh', type: 'rsync',
+                owner: 'root', group: 'root',
+                rsync__args: [ "--verbose", "--archive", "--delete", "--copy-links", "--no-perms" ]
+
             # install PostgreSQL. Use "vagrant up --provision-with=pgsql"
             patroni.vm.provision 'pgsql', type: 'shell', 
                 path: 'provision/pgsql.bash', 
-                args: [ pgver ], run: 'never'
+                args: [ pgver, pgdata ], run: 'never'
             
             # install patroni. Use "vagrant up --provision-with=patroni"
             patroni.vm.provision 'patroni', type: 'shell', 
@@ -63,6 +71,21 @@ Vagrant.configure(2) do |config|
                 path: 'provision/keepalived.bash',
                 args: [ vip ], run: 'never'
         end
+    end
+
+    config.vm.define "pgbackrest" do |pgbackrest|
+        pgbackrest.vm.hostname = "pgbackrest"
+
+        # ssh configuration
+        pgbackrest.vm.synced_folder 'ssh', '/root/.ssh', type: 'rsync',
+            owner: 'root', group: 'root',
+            rsync__args: [ "--verbose", "--archive", "--delete", "--copy-links", "--no-perms" ]
+
+        # pgbackrest remote setup. Use "vagrant up --provision-with=pgbackrest_remote"
+        pgbackrest.vm.provision 'pgbackrest_remote', type: 'shell',
+          path: 'provision/pgbackrest_remote.bash',
+            args: [ pgver, pgdata, patroni_nodes ],
+            run: 'never'
     end
 
     # get urls. Use "vagrant up --provision-with=get_urls"

@@ -1,4 +1,4 @@
-all: clean create_vm etcd patroni
+all: clean create_vm etcd pgsql patroni pgbackrest
 
 create_vm:
 	vagrant up
@@ -6,11 +6,16 @@ create_vm:
 etcd:
 	vagrant up --provision-with=etcd
 
-patroni:
+pgsql:
 	vagrant up --provision-with=pgsql
+
+patroni:
 	vagrant up --provision-with=patroni
 	vagrant up --provision-with=haproxy
 	vagrant up --provision-with=keepalived
+
+pgbackrest:
+	vagrant up --provision-with=pgbackrest_remote
 
 clean:
 	vagrant destroy -f

@@ -59,7 +59,7 @@ bootstrap:
       use_slots: true
       parameters:
         archive_mode: "on"
-        archive_command: /bin/true
+        archive_command: 'pgbackrest --stanza=my_stanza archive-push %p'
   initdb:
   - encoding: UTF8
   - data-checksums
@@ -86,6 +86,13 @@ postgresql:
       password: my-super-password
   parameters:
     unix_socket_directories: '/var/run/postgresql,/tmp'
+  create_replica_methods:
+    - basebackup
+    - pgbackrest
+  pgbackrest:
+    command: 'pgbackrest --stanza=--stanza=my_stanza --delta restore'
+    keep_data: True
+    no_params: True
 watchdog:
   mode: required
   device: /dev/watchdog
