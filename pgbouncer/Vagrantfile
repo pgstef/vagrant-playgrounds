@@ -1,0 +1,43 @@
+Vagrant.configure(2) do |config|
+  config.vm.box = "bento/ubuntu-24.04"
+
+  config.vm.provider 'libvirt' do |lv|
+    lv.cpus = 2
+    lv.memory = 2048
+  end
+  config.ssh.insert_key = false
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "./shared", "/shared", type: "nfs", nfs_udp: false
+
+  config.vm.define "bouncer" do |conf|
+    conf.vm.hostname = "bouncer"
+    conf.vm.network "private_network", ip: "10.0.0.11"
+    conf.vm.provision 'bouncer', type: 'shell', path: 'provision/bouncer.bash', run: 'never'
+  end
+
+  config.vm.define "postgres0" do |conf|
+    conf.vm.hostname = "postgres0"
+    conf.vm.network "private_network", ip: "10.0.0.12"
+    conf.vm.provision 'postgres0', type: 'shell', path: 'provision/postgres0.bash', run: 'never'
+  end
+
+  config.vm.define "postgres1" do |conf|
+    conf.vm.hostname = "postgres1"
+    conf.vm.network "private_network", ip: "10.0.0.13"
+    conf.vm.provision 'postgres1', type: 'shell', path: 'provision/postgres1.bash', run: 'never'
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    #-----------------------------------------------------------------------------------------------------------------------
+    echo '10.0.0.11 bouncer' >> /etc/hosts
+    echo '10.0.0.12 postgres0' >> /etc/hosts
+    echo '10.0.0.13 postgres1' >> /etc/hosts
+    #-----------------------------------------------------------------------------------------------------------------------
+    echo 'Extend disk space' && date
+    lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+    resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+    #-----------------------------------------------------------------------------------------------------------------------
+    echo 'Use BE ubuntu mirrors' && date
+    sed -E -i 's#http://[^\s]*archive\.ubuntu\.com/ubuntu#http://be.archive.ubuntu.com/ubuntu#g' /etc/apt/sources.list.d/ubuntu.sources
+  SHELL
+end
