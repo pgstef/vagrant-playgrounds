@@ -12,6 +12,8 @@ Vagrant.configure(2) do |config|
   config.vm.define "bouncer" do |conf|
     conf.vm.hostname = "bouncer"
     conf.vm.network "private_network", ip: "10.0.0.11"
+    conf.vm.network "forwarded_port", guest: 7432, host: 7432
+    conf.vm.network "forwarded_port", guest: 7433, host: 7433
     conf.vm.provision 'bouncer', type: 'shell', path: 'provision/bouncer.bash', run: 'never'
   end
 
