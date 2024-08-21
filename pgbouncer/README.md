@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This `Vagrantfile` is bootstrapping a fresh cluster with:
+This `Vagrantfile` is bootstrapping a fresh `Ubuntu 22.04` cluster with:
 
 * PgBouncer: 1 node (`bouncer`)
 * PostgreSQL 15: 2 nodes (`postgres0` and `postgres1`)
