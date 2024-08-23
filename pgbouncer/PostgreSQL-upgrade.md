@@ -217,7 +217,7 @@ sudo systemctl enable postgresql@16-main.service
 sudo -iu postgres /usr/lib/postgresql/16/bin/vacuumdb --all --analyze-in-stages
 ```
 
-* Resume traffic to new primary and check team that everything is fine:
+* Resume traffic to new primary and check that everything is fine:
 
 ```bash
 sudo -iu postgres psql -U pgbouncer -p 10101 -c "RESUME;"
