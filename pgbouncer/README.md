@@ -5,7 +5,7 @@
 This `Vagrantfile` is bootstrapping a fresh `Ubuntu 22.04` cluster with:
 
 * PgBouncer: 1 node (`bouncer`)
-* PostgreSQL 15: 2 nodes (`postgres0` and `postgres1`)
+* PostgreSQL 16: 2 nodes (`postgres0` and `postgres1`)
 * pgBackRest setup with nfs `shared` directory
 
 ---
